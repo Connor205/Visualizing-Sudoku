@@ -1,4 +1,5 @@
 """Summary
+Contains a basic algorithm for solving sudokus. Implements recursive backtracking.
 """
 from fileReading import *
 import numpy as np
@@ -48,7 +49,7 @@ def solve(puzzle):
       puzzle (matrix): The puzzle to solve
 
   Returns:
-      TYPE: Description
+      bool: if the puzzle was solvable with the current state
   """
   firstEmpty = findNextEmpty(puzzle)
   if not firstEmpty: # If there are no empty spots left
@@ -79,18 +80,4 @@ def findNextEmpty(puzzle):
       if puzzle[row][col] == 0:
         return (row, col)
   return None
-
-
-def main():
-  """Summary
-  """
-  puzzle = getPuzzleFromFile("puzzles/s15a.txt")
-  printSudoku(puzzle)
-  solve(puzzle)
-  print("=============================")
-  printSudoku(puzzle)
-
-
-if __name__ == '__main__':
-    main()
 

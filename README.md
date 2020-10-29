@@ -24,4 +24,4 @@ The final step was adding the UI for the different buttons. I started off by mak
 Solve: Solves the puzzle asap and displays the solution.
 Steps: Shows the steps the algorithm took to make it to the solution and then the final solution. 
 Reset: Clears board back to original state. 
-Newfile: Clears the board of everything and returns to the original menu.\
+Newfile: Clears the board of everything and returns to the original menu.

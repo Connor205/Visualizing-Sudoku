@@ -84,7 +84,7 @@ def findNextEmpty(puzzle):
 def main():
   """Summary
   """
-  puzzle = getPuzzleFromFile("puzzles/s02a.txt")
+  puzzle = getPuzzleFromFile("puzzles/s15a.txt")
   printSudoku(puzzle)
   solve(puzzle)
   print("=============================")

@@ -1,3 +1,10 @@
+"""Summary
+
+Attributes:
+    blockWidth (int): Description
+    offset (int): Description
+    win (TYPE): Description
+"""
 from fileReading import *
 from solvingSudoku import *
 from graphics import *
@@ -6,7 +13,16 @@ blockWidth = 50
 offset = 10
 win = GraphWin('Sudoku', offset * 4 + blockWidth * 9 + 1, 200 + blockWidth * 9 + 1)
 
+
 def drawBlock(row, col, val, color):
+  """Summary
+
+  Args:
+      row (TYPE): Description
+      col (TYPE): Description
+      val (TYPE): Description
+      color (TYPE): Description
+  """
   verticalOffsets = row // 3 + 1
   verticalO = verticalOffsets * offset + 50;
   horizontalOffsets = col // 3 + 1
@@ -26,6 +42,14 @@ def drawBlock(row, col, val, color):
     numberImage.draw(win)
 
 def findNextEmptyGraphics(puzzle):
+  """Summary
+
+  Args:
+      puzzle (TYPE): Description
+
+  Returns:
+      TYPE: Description
+  """
   for row in range(9):
     for col in range(9):
       if puzzle[row][col] == 0:
@@ -33,6 +57,12 @@ def findNextEmptyGraphics(puzzle):
   return None
 
 def DrawPuzzle(puzzle: list, color):
+  """Summary
+
+  Args:
+      puzzle (list): Description
+      color (TYPE): Description
+  """
   for row in range(9):
     for col in range(9):
       if puzzle[row][col] == 0:
@@ -41,6 +71,14 @@ def DrawPuzzle(puzzle: list, color):
         drawBlock(row, col, puzzle[row][col], color)
 
 def solveWithGraphics(puzzle):
+  """Summary
+
+  Args:
+      puzzle (TYPE): Description
+
+  Returns:
+      TYPE: Description
+  """
   time.sleep(0.25)
   """Summary
 
@@ -64,19 +102,36 @@ def solveWithGraphics(puzzle):
 
       puzzle[row][col] = 0
       drawBlock(row, col, 0, color_rgb(247, 169, 151))
+      time.sleep(0.25)
   return False
 
 def clear(win):
+    """Summary
+    Clears the window of all items (undraws them)
+    Args:
+        win (GraphWin): Description
+    """
     for item in win.items[:]:
         item.undraw()
     win.update()
 
 def rectangleContains(rect: Rectangle, p: Point):
+  """Summary
+
+  Args:
+      rect (Rectangle): Description
+      p (Point): Description
+
+  Returns:
+      TYPE: Description
+  """
   x = p.getX()
   y = p.getY()
   return x >= rect.getP1().getX() and x <= rect.getP2().getX() and y >= rect.getP1().getY() and y <= rect.getP2().getY()
 
 def main():
+  """Summary
+  """
   while(True):
     clear(win)
     name = Text(Point(win.getWidth()/2, 40), "Welcome to the Sudoku Solver \n By Connor Nelson")
@@ -124,38 +179,33 @@ def main():
     newFile.draw(win)
     newFileText.draw(win)
     while not shouldReset:
-
-
-      buttonPressed = False
-      while not buttonPressed:
-        userInput = win.getMouse()
-        print(userInput)
-        if rectangleContains(solveButton, userInput):
-          print("solve")
-          solve(puzzle)
+      userInput = win.getMouse()
+      print(userInput)
+      if rectangleContains(solveButton, userInput):
+        print("solve")
+        solve(puzzle)
+        DrawPuzzle(puzzle, color_rgb(76, 184, 46))
+        buttonPressed = True
+      elif rectangleContains(steps, userInput):
+        print("steps")
+        solveWithGraphics(puzzle)
+        if solve(puzzle):
           DrawPuzzle(puzzle, color_rgb(76, 184, 46))
-          buttonPressed = True
-        elif rectangleContains(steps, userInput):
-          print("steps")
-          solveWithGraphics(puzzle)
-          if solve(puzzle):
-            DrawPuzzle(puzzle, color_rgb(76, 184, 46))
-          else:
-            DrawPuzzle(puzzle, color_rgb(247, 169, 151))
-          buttonPressed = True
-        elif rectangleContains(reset, userInput):
-          print("reset")
-          buttonPressed = True
-          DrawPuzzle(blankPuzzle, color_rgb(76, 184, 46))
-          puzzle = blankPuzzle.copy()
-        elif rectangleContains(newFile, userInput):
-          print("newFile")
-          clear(win)
-          buttonPressed = True
-          shouldReset = True
         else:
-          buttonPressed = False
-
+          DrawPuzzle(puzzle, color_rgb(247, 169, 151))
+        buttonPressed = True
+      elif rectangleContains(reset, userInput):
+        print("reset")
+        buttonPressed = True
+        DrawPuzzle(blankPuzzle, "light green")
+        puzzle = getPuzzleFromFile("puzzles/" + filename)
+      elif rectangleContains(newFile, userInput):
+        print("newFile")
+        clear(win)
+        buttonPressed = True
+        shouldReset = True
+      else:
+        buttonPressed = False
   win.close()
 
 

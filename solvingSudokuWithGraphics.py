@@ -8,7 +8,7 @@ win = GraphWin('Sudoku', offset * 4 + blockWidth * 9 + 1, 200 + blockWidth * 9 +
 
 def drawBlock(row, col, val, color):
   verticalOffsets = row // 3 + 1
-  verticalO = verticalOffsets * offset;
+  verticalO = verticalOffsets * offset + 50;
   horizontalOffsets = col // 3 + 1
   horizontalO = horizontalOffsets * offset
   upperLeft = Point(col * blockWidth, row * blockWidth)
@@ -18,6 +18,7 @@ def drawBlock(row, col, val, color):
   block = Rectangle(upperLeft, bottomRight)
   block.setFill(color)
   block.draw(win)
+
   if val != 0:
     textPoint = Point(col * blockWidth + blockWidth/2, row * blockWidth + blockWidth/2)
     textPoint.move(horizontalO, verticalO)
@@ -70,8 +71,14 @@ def clear(win):
         item.undraw()
     win.update()
 
+def rectangleContains(rect: Rectangle, p: Point):
+  x = p.getX()
+  y = p.getY()
+  return x >= rect.getP1().getX() and x <= rect.getP2().getX() and y >= rect.getP1().getY() and y <= rect.getP2().getY()
+
 def main():
-  while(1):
+  while(True):
+    clear(win)
     name = Text(Point(win.getWidth()/2, 40), "Welcome to the Sudoku Solver \n By Connor Nelson")
     instructions = Text(Point(win.getWidth()/2, win.getHeight()/2), "Then click anywhere on the screen")
     entry1 = Entry(Point(win.getWidth()/2, 200),10)
@@ -81,18 +88,75 @@ def main():
       item.draw(win)
     win.getMouse()  # To know the user is finished with the text.
     filename = entry1.getText()
-
     clear(win)
-
+    shouldReset = False
+    blankPuzzle = getPuzzleFromFile("puzzles/" + filename)
     puzzle = getPuzzleFromFile("puzzles/" + filename)
-    DrawPuzzle(puzzle, "light green")
+    DrawPuzzle(blankPuzzle, "light green")
+    header = Text(Point(win.getWidth() / 2, 25), "Puzzle: " + filename)
+    header.setSize(24)
+    header.draw(win)
+
+    buttonWidth = 100
+    buttonHeight = 40
+    solveButton = Rectangle(Point((win.getWidth() / 6) - (buttonWidth / 2), win.getHeight() - 65 - buttonHeight / 2),
+                          Point(win.getWidth()/6+ buttonWidth / 2, win.getHeight() - 65 + buttonHeight / 2))
+    solveText = Text(Point((win.getWidth() / 6), win.getHeight() - 65), "Solve")
+
+    solveButton.draw(win)
+    solveText.draw(win)
+
+    steps = Rectangle(Point((win.getWidth() / 2) - (buttonWidth / 2), win.getHeight() - 65 - buttonHeight / 2), Point(win.getWidth() / 2 + (buttonWidth / 2), win.getHeight() - 65 + buttonHeight / 2))
+    solveText = Text(Point((win.getWidth() / 2), win.getHeight() - 65), "Steps")
+
+    steps.draw(win)
+    solveText.draw(win)
+
+    reset = Rectangle(Point((5 * win.getWidth() / 6) - (buttonWidth / 2), win.getHeight() - 90 - buttonHeight / 2),
+                          Point(5 * win.getWidth()/ 6 + buttonWidth / 2, win.getHeight() - 90 + buttonHeight / 2))
+    resetText = Text(Point((5 * win.getWidth() / 6), win.getHeight() - 90), "Reset")
+    reset.draw(win)
+    resetText.draw(win)
+
+    newFile = Rectangle(Point((5 * win.getWidth() / 6) - (buttonWidth / 2), win.getHeight() - 40 - buttonHeight / 2),
+                          Point(5 * win.getWidth()/ 6 + buttonWidth / 2, win.getHeight() - 40 + buttonHeight / 2))
+    newFileText = Text(Point((5 * win.getWidth() / 6), win.getHeight() - 40), "New File")
+    newFile.draw(win)
+    newFileText.draw(win)
+    while not shouldReset:
 
 
-    solveWithGraphics(puzzle)
-    printSudoku(puzzle)
-    DrawPuzzle(puzzle, color_rgb(76, 184, 46))
-    win.getMouse()
-    win.close()
+      buttonPressed = False
+      while not buttonPressed:
+        userInput = win.getMouse()
+        print(userInput)
+        if rectangleContains(solveButton, userInput):
+          print("solve")
+          solve(puzzle)
+          DrawPuzzle(puzzle, color_rgb(76, 184, 46))
+          buttonPressed = True
+        elif rectangleContains(steps, userInput):
+          print("steps")
+          solveWithGraphics(puzzle)
+          if solve(puzzle):
+            DrawPuzzle(puzzle, color_rgb(76, 184, 46))
+          else:
+            DrawPuzzle(puzzle, color_rgb(247, 169, 151))
+          buttonPressed = True
+        elif rectangleContains(reset, userInput):
+          print("reset")
+          buttonPressed = True
+          DrawPuzzle(blankPuzzle, color_rgb(76, 184, 46))
+          puzzle = blankPuzzle.copy()
+        elif rectangleContains(newFile, userInput):
+          print("newFile")
+          clear(win)
+          buttonPressed = True
+          shouldReset = True
+        else:
+          buttonPressed = False
+
+  win.close()
 
 
 if __name__ == '__main__':

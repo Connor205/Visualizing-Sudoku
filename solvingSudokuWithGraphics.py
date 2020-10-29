@@ -1,9 +1,9 @@
 """Summary
-
+Implements a visual solution to a sudoku puzzle parsed from a file
 Attributes:
-    blockWidth (int): Description
-    offset (int): Description
-    win (TYPE): Description
+    blockWidth (int): The width of each block in the table (used for scaling the graphics)
+    offset (int): The amount of offset from left and right side of screen as well as between each 3x3 square
+    win (TYPE): the graphics window
 """
 from fileReading import *
 from solvingSudoku import *
@@ -14,14 +14,15 @@ offset = 10
 win = GraphWin('Sudoku', offset * 4 + blockWidth * 9 + 1, 200 + blockWidth * 9 + 1)
 
 
-def drawBlock(row, col, val, color):
+def drawBlock(row: int, col: int, val: int, color):
+  global win
   """Summary
-
+  Draws the given block the correct color. Also adds in the value for that block if the value is non-zero
   Args:
-      row (TYPE): Description
-      col (TYPE): Description
-      val (TYPE): Description
-      color (TYPE): Description
+      row (int): row of block to draw
+      col (int): col of block to draw
+      val (int): value to place in the block - 0 if empty
+      color (string): string to represent color for the block
   """
   verticalOffsets = row // 3 + 1
   verticalO = verticalOffsets * offset + 50;
@@ -41,20 +42,6 @@ def drawBlock(row, col, val, color):
     numberImage = Text(textPoint, str(val))
     numberImage.draw(win)
 
-def findNextEmptyGraphics(puzzle):
-  """Summary
-
-  Args:
-      puzzle (TYPE): Description
-
-  Returns:
-      TYPE: Description
-  """
-  for row in range(9):
-    for col in range(9):
-      if puzzle[row][col] == 0:
-        return (row, col)
-  return None
 
 def DrawPuzzle(puzzle: list, color):
   """Summary
@@ -71,24 +58,17 @@ def DrawPuzzle(puzzle: list, color):
         drawBlock(row, col, puzzle[row][col], color)
 
 def solveWithGraphics(puzzle):
+
   """Summary
-
-  Args:
-      puzzle (TYPE): Description
-
-  Returns:
-      TYPE: Description
-  """
-  time.sleep(0.25)
-  """Summary
-
+  Solves the puzzle using recursive backtracking. Also displays its current progress to win.
   Args:
       puzzle (matrix): The puzzle to solve
 
   Returns:
-      TYPE: Description
+      boolean: If the puzzle could be solved given the current status
   """
-  firstEmpty = findNextEmptyGraphics(puzzle)
+  time.sleep(0.25)
+  firstEmpty = findNextEmpty(puzzle) # Find the next empty spot
   if not firstEmpty: # If there are no empty spots left
     return True
   row, col = firstEmpty
@@ -97,19 +77,19 @@ def solveWithGraphics(puzzle):
       puzzle[row][col] = val
       drawBlock(row, col, val, "light gray")
 
-      if solveWithGraphics(puzzle):
+      if solveWithGraphics(puzzle): # Check to see if it worked
         return True
 
-      puzzle[row][col] = 0
-      drawBlock(row, col, 0, color_rgb(247, 169, 151))
-      time.sleep(0.25)
+      puzzle[row][col] = 0 # If it didn't then reset and try again
+      drawBlock(row, col, 0, color_rgb(247, 169, 151))  # Draw the block red if failed
+      time.sleep(0.25) # Delay
   return False
 
 def clear(win):
     """Summary
     Clears the window of all items (undraws them)
     Args:
-        win (GraphWin): Description
+        win (GraphWin): the window to clear
     """
     for item in win.items[:]:
         item.undraw()
@@ -117,23 +97,24 @@ def clear(win):
 
 def rectangleContains(rect: Rectangle, p: Point):
   """Summary
-
+  If the point given is inside of the rectange
   Args:
-      rect (Rectangle): Description
-      p (Point): Description
+      rect (Rectangle): a rectangle
+      p (Point): a point
 
   Returns:
-      TYPE: Description
+      boolean: if the point is inside the given retangle
   """
   x = p.getX()
   y = p.getY()
   return x >= rect.getP1().getX() and x <= rect.getP2().getX() and y >= rect.getP1().getY() and y <= rect.getP2().getY()
 
 def main():
-  """Summary
-  """
+  # Loop infinetley
   while(True):
+    # Clear every time we reset
     clear(win)
+    ##### Drawing the Input File Screen #######
     name = Text(Point(win.getWidth()/2, 40), "Welcome to the Sudoku Solver \n By Connor Nelson")
     instructions = Text(Point(win.getWidth()/2, win.getHeight()/2), "Then click anywhere on the screen")
     entry1 = Entry(Point(win.getWidth()/2, 200),10)
@@ -144,14 +125,19 @@ def main():
     win.getMouse()  # To know the user is finished with the text.
     filename = entry1.getText()
     clear(win)
+
+    ##### Getting the puzzle from the file and setting variables ######
     shouldReset = False
     blankPuzzle = getPuzzleFromFile("puzzles/" + filename)
     puzzle = getPuzzleFromFile("puzzles/" + filename)
+
+    ##### Drawing the initial screen #######
     DrawPuzzle(blankPuzzle, "light green")
     header = Text(Point(win.getWidth() / 2, 25), "Puzzle: " + filename)
     header.setSize(24)
     header.draw(win)
 
+    ##### Drawing the buttons at the bottom of the screen #####
     buttonWidth = 100
     buttonHeight = 40
     solveButton = Rectangle(Point((win.getWidth() / 6) - (buttonWidth / 2), win.getHeight() - 65 - buttonHeight / 2),
@@ -178,32 +164,27 @@ def main():
     newFileText = Text(Point((5 * win.getWidth() / 6), win.getHeight() - 40), "New File")
     newFile.draw(win)
     newFileText.draw(win)
+
+    ##### Loop until the program should be reset #####
     while not shouldReset:
+      # Wait for user input
       userInput = win.getMouse()
       print(userInput)
-      if rectangleContains(solveButton, userInput):
-        print("solve")
-        solve(puzzle)
+      if rectangleContains(solveButton, userInput): ## If the user clicks on solve
+        solve(puzzle) # Solve the puzzle and then draw the puzzle on the screen in darker green
         DrawPuzzle(puzzle, color_rgb(76, 184, 46))
-        buttonPressed = True
-      elif rectangleContains(steps, userInput):
-        print("steps")
-        solveWithGraphics(puzzle)
-        if solve(puzzle):
+      elif rectangleContains(steps, userInput): ## if the user clicks on steps
+        solveWithGraphics(puzzle) #Solve but showing steps
+        if solve(puzzle): # If the puzzle is solveable then print it again showing that the algorithm is done
           DrawPuzzle(puzzle, color_rgb(76, 184, 46))
         else:
-          DrawPuzzle(puzzle, color_rgb(247, 169, 151))
-        buttonPressed = True
-      elif rectangleContains(reset, userInput):
-        print("reset")
-        buttonPressed = True
-        DrawPuzzle(blankPuzzle, "light green")
-        puzzle = getPuzzleFromFile("puzzles/" + filename)
-      elif rectangleContains(newFile, userInput):
-        print("newFile")
-        clear(win)
-        buttonPressed = True
-        shouldReset = True
+          DrawPuzzle(puzzle, color_rgb(247, 169, 151)) # If the algorithm is not able to find a solution then draw it in red
+      elif rectangleContains(reset, userInput): # If the user clicks reset
+        DrawPuzzle(blankPuzzle, "light green")  # Then draw the puzzle again in light green
+        puzzle = getPuzzleFromFile("puzzles/" + filename)   # Also reset puzzle to an unsolved version
+      elif rectangleContains(newFile, userInput): # If the user wants a new file
+        clear(win) # Clear the window
+        shouldReset = True  # Exit loop
       else:
         buttonPressed = False
   win.close()
